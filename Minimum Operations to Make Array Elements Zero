@@ -1,0 +1,32 @@
+import math
+
+class Solution(object):
+    def minOperations(self, queries):
+        """
+        :type queries: List[List[int]]
+        :rtype: int
+        """
+
+        def total_steps(n):
+            """Return sum of steps(x) for x in [1..n]."""
+            if n == 0:
+                return 0
+
+            total = 0
+            power = 1   # 4^0
+            step = 1
+            while power <= n:
+                next_power = power * 4
+                # count numbers in [power, min(n, next_power - 1)]
+                count = min(n, next_power - 1) - power + 1
+                total += count * step
+                power = next_power
+                step += 1
+            return total
+
+        result = 0
+        for l, r in queries:
+            s = total_steps(r) - total_steps(l - 1)
+            ops = (s + 1) // 2  # ceil division
+            result += ops
+        return result
