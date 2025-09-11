@@ -1,0 +1,25 @@
+class Solution(object):
+    def sortVowels(self, s):
+        """
+        :type s: str
+        :rtype: str
+        """
+        vowels = set("aeiouAEIOU")
+        
+        # Step 1: Extract vowels
+        vowel_list = [ch for ch in s if ch in vowels]
+        
+        # Step 2: Sort vowels by ASCII
+        vowel_list.sort()
+        
+        # Step 3: Replace vowels in order
+        res = []
+        j = 0  # pointer for sorted vowels
+        for ch in s:
+            if ch in vowels:
+                res.append(vowel_list[j])
+                j += 1
+            else:
+                res.append(ch)
+        
+        return "".join(res)
