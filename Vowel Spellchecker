@@ -1,0 +1,36 @@
+class Solution(object):
+    def spellchecker(self, wordlist, queries):
+        """
+        :type wordlist: List[str]
+        :type queries: List[str]
+        :rtype: List[str]
+        """
+
+        def devowel(word):
+            vowels = set("aeiou")
+            return "".join("*" if c in vowels else c for c in word)
+
+        # Exact words set
+        words = set(wordlist)
+
+        # Case-insensitive dict (first occurrence kept)
+        case_map = {}
+        # Vowel-error dict (first occurrence kept)
+        vowel_map = {}
+
+        for word in wordlist:
+            lower = word.lower()
+            case_map.setdefault(lower, word)
+            vowel_map.setdefault(devowel(lower), word)
+
+        result = []
+        for q in queries:
+            if q in words:
+                result.append(q)  # Exact match
+            elif q.lower() in case_map:
+                result.append(case_map[q.lower()])
+            elif devowel(q.lower()) in vowel_map:
+                result.append(vowel_map[devowel(q.lower())])
+            else:
+                result.append("")
+        return result
