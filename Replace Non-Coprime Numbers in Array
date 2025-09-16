@@ -1,0 +1,28 @@
+import math
+
+class Solution(object):
+    def replaceNonCoprimes(self, nums):
+        """
+        :type nums: List[int]
+        :rtype: List[int]
+        """
+        stack = []
+        
+        for num in nums:
+            stack.append(num)
+            
+            # Keep merging while last two are non-coprime
+            while len(stack) > 1:
+                a, b = stack[-2], stack[-1]
+                g = math.gcd(a, b)   # Python 3.5+
+                
+                if g == 1:  # coprime
+                    break
+                
+                # Replace with LCM
+                lcm_val = (a * b) // g
+                stack.pop()
+                stack.pop()
+                stack.append(lcm_val)
+        
+        return stack
