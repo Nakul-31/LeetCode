@@ -1,0 +1,25 @@
+class Spreadsheet:
+
+    def __init__(self, rows: int):
+        self.rows = rows
+        self.cols = 26  # A-Z
+        self.grid = {}  # cell -> value
+
+    def setCell(self, cell: str, value: int) -> None:
+        self.grid[cell] = value
+
+    def resetCell(self, cell: str) -> None:
+        if cell in self.grid:
+            del self.grid[cell]
+
+    def getValue(self, formula: str) -> int:
+        # formula is always like "=X+Y"
+        expr = formula[1:]  # remove '='
+        x, y = expr.split('+')
+
+        def getVal(token: str) -> int:
+            if token.isdigit():
+                return int(token)
+            return self.grid.get(token, 0)
+
+        return getVal(x) + getVal(y)
