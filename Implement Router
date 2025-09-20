@@ -1,0 +1,63 @@
+from collections import deque, defaultdict
+import bisect
+from typing import List
+
+class Router:
+
+    def __init__(self, memoryLimit: int):
+        self.limit = memoryLimit
+        self.queue = deque()                  # FIFO storage of packets: (source, dest, timestamp)
+        self.duplicates = set()               # set of (source,dest,timestamp) to detect duplicates
+        self.size = 0
+
+        # per-destination storage:
+        self.dest_ts = defaultdict(list)      # dest -> list of timestamps (appended in add order)
+        self.dest_start = defaultdict(int)    # dest -> logical start index (how many removed from front)
+
+    def _evict_oldest(self):
+        if not self.queue:
+            return
+        src, dst, ts = self.queue.popleft()
+        self.duplicates.discard((src, dst, ts))
+        # logically remove the earliest timestamp for this destination
+        self.dest_start[dst] += 1
+        self.size -= 1
+
+    def addPacket(self, source: int, destination: int, timestamp: int) -> bool:
+        key = (source, destination, timestamp)
+        # duplicate check
+        if key in self.duplicates:
+            return False
+
+        # if full, evict oldest single packet
+        if self.size == self.limit:
+            self._evict_oldest()
+
+        # add packet
+        self.dest_ts[destination].append(timestamp)
+        self.queue.append((source, destination, timestamp))
+        self.duplicates.add(key)
+        self.size += 1
+        return True
+
+    def forwardPacket(self) -> List[int]:
+        if not self.queue:
+            return []
+        src, dst, ts = self.queue.popleft()
+        self.duplicates.discard((src, dst, ts))
+        self.dest_start[dst] += 1
+        self.size -= 1
+        return [src, dst, ts]
+
+    def getCount(self, destination: int, startTime: int, endTime: int) -> int:
+        lst = self.dest_ts.get(destination)
+        if not lst:
+            return 0
+        start_idx = self.dest_start.get(destination, 0)
+        # if nothing active for this dest
+        if start_idx >= len(lst):
+            return 0
+        # find left/right indices within the active region [start_idx, len(lst))
+        left = bisect.bisect_left(lst, startTime, lo=start_idx)
+        right = bisect.bisect_right(lst, endTime, lo=start_idx)
+        return right - left
