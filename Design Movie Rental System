@@ -1,0 +1,77 @@
+import heapq
+from collections import defaultdict
+from typing import List
+
+class MovieRentingSystem:
+    def __init__(self, n: int, entries: List[List[int]]):
+        # price lookup
+        self.price = {}
+        # per-movie available heap: (price, shop, version)
+        self.available = defaultdict(list)
+        # global rented heap: (price, shop, movie, version)
+        self.rented = []
+        # current status ('available' or 'rented') for each (shop, movie)
+        self.status = {}
+        # version counter for each (shop, movie) — incremented whenever state changes
+        self.version = {}
+        
+        for shop, movie, p in entries:
+            key = (shop, movie)
+            self.price[key] = p
+            self.status[key] = 'available'
+            self.version[key] = 0
+            heapq.heappush(self.available[movie], (p, shop, 0))
+
+    def search(self, movie: int) -> List[int]:
+        res = []
+        temp = []
+        heap = self.available[movie]
+        
+        # Pop until we collect up to 5 valid available shops.
+        while heap and len(res) < 5:
+            price, shop, ver = heapq.heappop(heap)
+            key = (shop, movie)
+            # Valid if current status is available and version matches
+            if self.status.get(key) == 'available' and self.version.get(key) == ver:
+                res.append(shop)
+                temp.append((price, shop, ver))
+            # else: stale entry — drop it permanently
+        
+        # push back the valid entries we popped
+        for item in temp:
+            heapq.heappush(heap, item)
+        
+        return res
+
+    def rent(self, shop: int, movie: int) -> None:
+        key = (shop, movie)
+        # change state to rented and bump version
+        self.version[key] = self.version.get(key, 0) + 1
+        self.status[key] = 'rented'
+        heapq.heappush(self.rented, (self.price[key], shop, movie, self.version[key]))
+
+    def drop(self, shop: int, movie: int) -> None:
+        key = (shop, movie)
+        # change state to available and bump version
+        self.version[key] = self.version.get(key, 0) + 1
+        self.status[key] = 'available'
+        heapq.heappush(self.available[movie], (self.price[key], shop, self.version[key]))
+
+    def report(self) -> List[List[int]]:
+        res = []
+        temp = []
+        
+        # Pop until we collect up to 5 valid rented movies
+        while self.rented and len(res) < 5:
+            price, shop, movie, ver = heapq.heappop(self.rented)
+            key = (shop, movie)
+            if self.status.get(key) == 'rented' and self.version.get(key) == ver:
+                res.append([shop, movie])
+                temp.append((price, shop, movie, ver))
+            # else: stale entry -> ignore
+        
+        # push back the valid rented entries we popped
+        for item in temp:
+            heapq.heappush(self.rented, item)
+        
+        return res
