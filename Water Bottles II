@@ -1,0 +1,23 @@
+class Solution:
+    def maxBottlesDrunk(self, numBottles: int, numExchange: int) -> int:
+        drunk = 0
+        empty = 0
+        
+        # Drink all current bottles
+        drunk += numBottles
+        empty += numBottles
+        numBottles = 0
+        
+        # Keep exchanging while possible
+        while empty >= numExchange:
+            # Exchange once
+            empty -= numExchange
+            numExchange += 1
+            numBottles += 1  # get 1 full bottle
+            
+            # Drink that new bottle
+            drunk += numBottles
+            empty += numBottles
+            numBottles = 0
+            
+        return drunk
