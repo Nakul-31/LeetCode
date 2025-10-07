@@ -1,0 +1,32 @@
+from bisect import bisect_right
+
+class Solution:
+    def avoidFlood(self, rains: List[int]) -> List[int]:
+        full = {}         # lake -> last day it was filled
+        dry_days = []     # sorted indices of available dry days
+        ans = [-1] * len(rains)
+        
+        for i, lake in enumerate(rains):
+            if lake > 0:
+                if lake in full:
+                    # Need to find a dry day after the last rain day
+                    last_filled = full[lake]
+                    idx = bisect_right(dry_days, last_filled)
+                    if idx == len(dry_days):
+                        # No available dry day after the last rain -> flood
+                        return []
+                    dry_day = dry_days.pop(idx)
+                    ans[dry_day] = lake  # we dry this lake on that day
+                
+                # mark this lake as full
+                full[lake] = i
+                ans[i] = -1
+            else:
+                # dry day, mark for later
+                dry_days.append(i)
+        
+        # fill remaining dry days with any arbitrary lake (e.g., 1)
+        for i in dry_days:
+            ans[i] = 1
+        
+        return ans
