@@ -1,0 +1,21 @@
+from bisect import bisect_left
+from math import ceil
+from typing import List
+
+class Solution:
+    def successfulPairs(self, spells: List[int], potions: List[int], success: int) -> List[int]:
+        potions.sort()
+        m = len(potions)
+        res = []
+        
+        for spell in spells:
+            # Minimum potion needed for success
+            min_potion = ceil(success / spell)
+            
+            # Find the first potion >= min_potion
+            idx = bisect_left(potions, min_potion)
+            
+            # Count of successful pairs for this spell
+            res.append(m - idx)
+        
+        return res
