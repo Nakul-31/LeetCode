@@ -1,0 +1,27 @@
+from typing import List
+
+class Solution:
+    def minTime(self, skill: List[int], mana: List[int]) -> int:
+        n = len(skill)
+        m = len(mana)
+        
+        # dp[i] = finish time of wizard i for previous potion
+        dp = [0] * n
+        
+        for j in range(m):
+            current_mana = mana[j]
+            
+            # Compute S_j: earliest start time for wizard 0
+            S_j = 0
+            prefix_sum = 0
+            for i in range(n):
+                S_j = max(S_j, dp[i] - prefix_sum * current_mana)
+                prefix_sum += skill[i]
+            
+            # Propagate potion through all wizards
+            prev_finish = S_j
+            for i in range(n):
+                dp[i] = prev_finish + skill[i] * current_mana
+                prev_finish = dp[i]
+        
+        return dp[-1]
